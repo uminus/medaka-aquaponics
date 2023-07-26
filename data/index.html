@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medaka Tarou</title>
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.classless.min.css">
+
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"/>
+  <style>
+    .material-symbols-outlined {
+      vertical-align: bottom;
+    }
+
+    header > div > p:not(:last-child) {
+      margin-bottom: var(--nav-link-spacing-vertical);
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <header>
+    <h1>Medaka Tarou</h1>
+    <div id="values"></div>
+  </header>
+
+  <section>
+    <form action="javascript: void(0)">
+      <fieldset id="field__fan"></fieldset>
+      <fieldset id="field__pump"></fieldset>
+    </form>
+  </section>
+
+  <dialog>
+    <article aria-busy="true">Please wait…</article>
+  </dialog>
+
+  <footer>
+    <p>Source code: <a href="https://github.com/uminus" rel="noopener" target="_blank">@uminus</a>.</p>
+  </footer>
+</main>
+
+<script type="module">
+  import {h, Fragment, render} from 'https://esm.sh/preact';
+  import {useState, useEffect, useCallback} from 'https://esm.sh/preact/hooks';
+  import htm from 'https://esm.sh/htm';
+
+  const html = htm.bind(h);
+
+  const urlQuery = new URLSearchParams(window.location.search);
+  const URL = urlQuery.has("url") ? `http://${urlQuery.get("url")}` : ".";
+
+  const polling = (fn, interval = 1000) => {
+    useEffect(() => {
+      console.log("polling useEffect");
+      fn();
+      const timerId = setInterval(() => fn(), Math.max(interval, 1000));
+      return () => {
+        console.log("polling clearInterval");
+        clearInterval(timerId);
+      };
+    }, [fn]);
+  }
+
+  function Value({icon, value}) {
+    return html`<p><span className="material-symbols-outlined">${icon}</span>${value}</p>`;
+  }
+
+  function Values() {
+    const [timestamp, setTimestamp] = useState(NaN);
+    const [temperature, setTemperature] = useState(NaN);
+    const [waterTemperature, setWaterTemperature] = useState(NaN);
+    const [humidity, setHumidity] = useState(NaN);
+    const [hpa, setHpa] = useState(NaN);
+    const [tsd, setTsd] = useState(NaN);
+
+    const fetchStatus = useCallback(async () => {
+      const {
+        timestamp,
+        temperature,
+        water_temperature,
+        humidity,
+        atmospheric_pressure,
+        tds
+      } = await fetch(`${URL}/status`).then(res => res.json());
+
+      setTimestamp(new Date(timestamp * 1000).toLocaleString());
+      setTemperature(temperature.toFixed(2));
+      setWaterTemperature(water_temperature.toFixed(2));
+      setHumidity(humidity.toFixed(2));
+      setHpa(atmospheric_pressure.toLocaleString(undefined, {maximumFractionDigits: 2}));
+      setTsd(tds.toFixed(2));
+    }, [setTimestamp]);
+    polling(fetchStatus, 5000);
+
+    return html`
+      <${Fragment}>
+        <${Value} icon="schedule" value="${timestamp}"/>
+        <${Value} icon="water_drop" value="${waterTemperature}℃"/>
+        <${Value} icon="thermometer" value="${temperature}℃"/>
+        <${Value} icon="humidity_percentage" value="${humidity}%"/>
+        <${Value} icon="airware" value="${hpa}㍱"/>
+        <${Value} icon="total_dissolved_solids" value="${tsd}ppm"/>
+      </${Fragment}>`;
+  }
+
+  render(html`
+    <${Values} name="World"/>`, document.getElementById("values"));
+
+
+  function DeviceControl({name, min, max}) {
+    const [d, setData] = useState({on: false, duty: 0});
+
+    useEffect(async () => {
+      const data = await fetch(`${URL}/${name}/`)
+          .then(res => res.json());
+      setData(data);
+    }, []);
+
+    const opFn = useCallback(
+        async (op) => {
+          const data = await fetch(`${URL}/${name}/${op}`)
+              .then(res => res.json());
+          setData(data);
+        }, []);
+
+    const onOff = useCallback(async (e) => opFn(e.target.checked ? "on" : "off"), []);
+    const changeDuty = useCallback(async (e) => opFn(e.target.value), []);
+
+    return html`
+      <label for="${name}__on">
+        <input type="checkbox" role="switch" id="${name}__on" checked=${d.on} onchange=${onOff}/>
+        <strong>${name.charAt(0).toUpperCase() + name.slice(1)}<sub>${d.duty}</sub></strong>
+        <input type="range" min="${min}" max="${max}" value=${d.duty} step="10" onchange=${changeDuty}/>
+      </label>`;
+  }
+
+  render(html`
+    <${DeviceControl} name="fan" min=70 max=255/>`, document.getElementById("field__fan"));
+  render(html`
+    <${DeviceControl} name="pump" min=90 max=255/>`, document.getElementById("field__pump"));
+</script>
+</body>
+
+</html>

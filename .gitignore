@@ -1,0 +1,16 @@
+env.local.ini
+
+### JetBrains
+.idea/*
+*.iws
+out/
+
+### PlatformIO template
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+.pio
+CMakeListsPrivate.txt
+cmake-build-*/
+
