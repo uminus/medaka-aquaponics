@@ -28,8 +28,8 @@ public:
         ledcAttachPin(pin_, channel_);
     }
 
-    void installWebAPI(AsyncWebServer server) override {
-        server.on((String{"/"} + name_ + "/").c_str(),
+    void installWebAPI(AsyncWebServer* server) override {
+        server->on((String{"/"} + name_ + "/").c_str(),
                   HTTP_GET,
                   [this](AsyncWebServerRequest *request) {
                       String response;
@@ -37,7 +37,7 @@ public:
                       request->send(200, "application/json", response);
                   });
 
-        server.on((String{R"(^\/)"} + name_ + R"(\/(on|off|\d+)$)").c_str(),
+        server->on((String{R"(^\/)"} + name_ + R"(\/(on|off|\d+)$)").c_str(),
                   HTTP_GET,
                   [this](AsyncWebServerRequest *request) {
                       auto op = request->pathArg(0);
@@ -94,10 +94,10 @@ public:
     AirCoolerFan(String name, int channel, int pin, int min, int freq)
             : DCMotor(std::move(name), channel, pin, min, freq) {}
 
-    void installWebAPI(AsyncWebServer server) override {
+    void installWebAPI(AsyncWebServer* server) override {
         DCMotor::installWebAPI(server);
 
-        server.on((String{R"(^\/)"} + name_ + R"(\/auto\/(water_temperature)\/(\d+\.?\d)$)").c_str(),
+        server->on((String{R"(^\/)"} + name_ + R"(\/auto\/(water_temperature)\/(\d+\.?\d)$)").c_str(),
                   HTTP_GET,
                   [](AsyncWebServerRequest *request) {
                       Serial.println(request->pathArg(0));

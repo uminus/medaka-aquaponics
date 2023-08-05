@@ -7,10 +7,10 @@
 ## build
 `env.local.ini` に WiFi の接続情報と [Ambient](https://ambidata.io/) のチャンネルID, ライトキーを入力してからビルドする必要がある。
 ```ini
-[env:esp32dev]
+[local]
 build_flags =
-    ${env.build_flags}
-    '-DWIFI_SSID="WIFI SSID"'
+    -D DEVICE_NAME='"medaka-tarou"'
+    -D WIFI_SSID='"WIFI SSID"'
     -D WIFI_PASSWORD='"WIFI PASSWORD"'
     -D AMBIENT_CLIENT_ID=123456
     -D AMBIENT_WRITE_KEY='"AMBIENT WRITE KEY"'

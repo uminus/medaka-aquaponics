@@ -8,7 +8,7 @@ class Module {
 public:
     virtual void setup() {};
 
-    virtual void installWebAPI(AsyncWebServer) {};
+    virtual void installWebAPI(AsyncWebServer*) {};
 
     virtual Data loop(Data d) {
         return d;
