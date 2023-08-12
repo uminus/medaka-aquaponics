@@ -8,15 +8,17 @@ struct Device {
     String name = "unknown";
     bool on = false;
     int duty = 0;
+    bool automatic = false;
 
 
 public:
-    static StaticJsonDocument<256> toJson(const Device& d) {
-        StaticJsonDocument<64> doc;
+    static StaticJsonDocument<128> toJson(const Device& d) {
+        StaticJsonDocument<128> doc;
         JsonObject object = doc.to<JsonObject>();
         object["name"] = d.name;
         object["on"] = d.on;
         object["duty"] = d.duty;
+        object["auto"] = d.automatic;
         return doc;
     }
 };
@@ -73,8 +75,8 @@ public:
         return next;
     }
 
-    static StaticJsonDocument<256> toJson(const Data& d) {
-        StaticJsonDocument<256> doc;
+    static StaticJsonDocument<512> toJson(const Data& d) {
+        StaticJsonDocument<512> doc;
         JsonObject object = doc.to<JsonObject>();
         object["timestamp"] = d.timestamp;
         object["water_temperature"] = d.water_temperature;

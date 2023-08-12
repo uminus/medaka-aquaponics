@@ -18,6 +18,10 @@
     header > div > p:not(:last-child) {
       margin-bottom: var(--nav-link-spacing-vertical);
     }
+
+    .hidden {
+      visibility: hidden;
+    }
   </style>
 </head>
 
@@ -112,7 +116,7 @@
     <${Values} name="World"/>`, document.getElementById("values"));
 
 
-  function DeviceControl({name, min, max}) {
+  function DeviceControl({name, min, max, auto}) {
     const [d, setData] = useState({on: false, duty: 0});
 
     useEffect(async () => {
@@ -129,20 +133,26 @@
         }, []);
 
     const onOff = useCallback(async (e) => opFn(e.target.checked ? "on" : "off"), []);
+    const autoOp = useCallback(async (e) => opFn(e.target.checked ? "auto" : "off"), []);
     const changeDuty = useCallback(async (e) => opFn(e.target.value), []);
 
     return html`
       <label for="${name}__on">
-        <input type="checkbox" role="switch" id="${name}__on" checked=${d.on} onchange=${onOff}/>
+        <input type="checkbox" role="switch" id="${name}__on" checked=${d.on} onchange=${onOff} disabled=${d.auto}/>
+        <label for="${name}__auto" className=${auto ? "hidden" : ""}>
+          <input type="checkbox" id="${name}__auto" checked=${d.auto} onchange=${autoOp}/>
+          Auto
+        </label>
+
         <strong>${name.charAt(0).toUpperCase() + name.slice(1)}<sub>${d.duty}</sub></strong>
         <input type="range" min="${min}" max="${max}" value=${d.duty} step="10" onchange=${changeDuty}/>
       </label>`;
   }
 
   render(html`
-    <${DeviceControl} name="fan" min=70 max=255/>`, document.getElementById("field__fan"));
+    <${DeviceControl} name="fan" min=70 max=255 />`, document.getElementById("field__fan"));
   render(html`
-    <${DeviceControl} name="pump" min=90 max=255/>`, document.getElementById("field__pump"));
+    <${DeviceControl} name="pump" min=90 max=255 auto=false/>`, document.getElementById("field__pump"));
 </script>
 </body>
 

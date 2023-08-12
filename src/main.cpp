@@ -33,8 +33,8 @@ void setup() {
     holder.install(new Thermistor(PIN_THERMISTOR));
     holder.install(new BME280);
     holder.install(new TDSSensor(PIN_TDS));
-    holder.install(new DCMotor("fan", CH_FAN, PIN_FAN, 70, 30000));
-    holder.install(new AirCoolerFan("pump", CH_PUMP, PIN_PUMP, 90, 120));
+    holder.install(new DCMotor("pump", CH_PUMP, PIN_PUMP, 90, 120));
+    holder.install(new AirCoolerFan("fan", CH_FAN, PIN_FAN, 70, 30000));
     holder.install(new AmbientPublisher);
 
     holder.doSetup();
